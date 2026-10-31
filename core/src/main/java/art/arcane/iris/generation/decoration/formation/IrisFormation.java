@@ -122,6 +122,9 @@ public class IrisFormation implements IrisProceduralPlacement {
     @Description("A noise-driven palette for the caprock. When set this overrides the single capBlock.")
     private IrisMaterialPalette capPalette = null;
 
+    @Description("SPIRE only: place the cap as a single block standing on the centre of the top (a tip, e.g. a wall on a pillar) instead of capping the top two layers, which on a wide-topped spire covers its whole crown.")
+    private boolean capTip = false;
+
     @Description("Optional palette of strata (horizontal colored bands) blended into the rock body by y level. When set, every strataThickness blocks of height switches to the next strata block, producing the signature banded look. Falls back to the main block where unset.")
     private IrisMaterialPalette strataPalette = null;
 

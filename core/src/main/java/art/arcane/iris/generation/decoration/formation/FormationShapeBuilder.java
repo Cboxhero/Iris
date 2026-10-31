@@ -31,7 +31,8 @@ public final class FormationShapeBuilder {
 
     public static void spire(FormationCanvas canvas, IrisFormation f, int height, double baseRadius, RNG rng) {
         double topRadius = f.getTopWidth();
-        column(canvas, f, height, baseRadius, topRadius, 0, 0, rng, true);
+        boolean tip = f.isCapTip();
+        column(canvas, f, height, baseRadius, topRadius, 0, 0, rng, !tip);
         double lean = Math.toRadians(f.getLean());
         double azimuth = Math.toRadians(f.getLeanAzimuth());
         int previousX = 0;
@@ -40,7 +41,7 @@ public final class FormationShapeBuilder {
             double shear = Math.tan(lean) * y;
             int centerX = (int) Math.round(Math.cos(azimuth) * shear);
             int centerZ = (int) Math.round(Math.sin(azimuth) * shear);
-            boolean cap = y >= height - 2;
+            boolean cap = !tip && y >= height - 2;
             for (int x = Math.min(previousX, centerX); x <= Math.max(previousX, centerX); x++) {
                 setSpireCenter(canvas, x, y, previousZ, cap);
             }
@@ -49,6 +50,9 @@ public final class FormationShapeBuilder {
             }
             previousX = centerX;
             previousZ = centerZ;
+        }
+        if (tip) {
+            canvas.setCap(previousX, height, previousZ);
         }
     }
 
