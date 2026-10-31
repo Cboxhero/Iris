@@ -315,7 +315,7 @@ public class IrisTerrainNormalActuator extends EngineAssignedActuator<NativeBloc
                                     ? complex.naturalTrueHeight(realX, realZ) : naturalColumn.surfaceY(layerSurfaceY);
                             cut = Math.max(0, naturalSurfaceY - layerSurfaceY);
                         }
-                        blocks = biome.generateLayers(dimension, realX, realZ, rng,
+                        blocks = complex.blendBiome(biome, realX, realZ).generateLayers(dimension, realX, realZ, rng,
                                 layerSurfaceY + cut + 1 - bedrockFloor, layerSurfaceY + cut, data, complex);
                     }
 

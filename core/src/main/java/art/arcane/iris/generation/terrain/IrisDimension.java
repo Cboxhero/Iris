@@ -204,6 +204,10 @@ public class IrisDimension extends IrisRegistrant {
     private IrisGeneratorStyle landBiomeStyle = NoiseStyle.CELLULAR_IRIS_DOUBLE.style();
     @Description("The noise style used to select shore biomes within a region")
     private IrisGeneratorStyle shoreBiomeStyle = NoiseStyle.CELLULAR_IRIS_DOUBLE.style();
+    @MinNumber(0)
+    @MaxNumber(32)
+    @Description("Width in blocks of the band where neighbouring land biomes bleed into each other. Within it a column takes its surface layers and its stored biome (sky, fog, grass and water colours) from a land biome at a jittered spot up to this far away, so borders become a dithered mix the client fades smoothly instead of a hard line. Terrain height, objects and decorations still follow the column's own biome. 0 keeps hard borders.")
+    private int surfaceBlend = 0;
     @Description("The noise style used to select sea biomes within a region")
     private IrisGeneratorStyle seaBiomeStyle = NoiseStyle.CELLULAR_IRIS_DOUBLE.style();
     @Description("The noise style used to select cave biomes within a region")

@@ -66,7 +66,7 @@ public class IrisBiomeActuator extends EngineAssignedActuator<NativeBiome> {
             for (int zf = 0; zf < depth; zf++) {
                 int worldX = x + xf;
                 int worldZ = z + zf;
-                IrisBiome biome = biomeCache.get(xf, zf);
+                IrisBiome biome = complex.blendBiome(biomeCache.get(xf, zf), worldX, worldZ);
                 NativeBiome platformBiome = resolve(biomeKey(
                         biome,
                         getDimension(),

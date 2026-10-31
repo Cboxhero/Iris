@@ -48,6 +48,7 @@ import art.arcane.iris.world.history.TransitionDisplacementField;
 import art.arcane.iris.world.history.TransitionGeometryBlender;
 import art.arcane.iris.generation.decoration.HydrologyVegetation;
 import art.arcane.iris.generation.hydrology.cave.HydrologyCaveCell;
+import art.arcane.iris.generation.hydrology.grid.CellHash;
 import art.arcane.iris.generation.hydrology.config.IrisHydrologyMaterials;
 import art.arcane.iris.generation.hydrology.engine.HydrologyRuntime;
 import art.arcane.iris.generation.hydrology.raster.ChunkWaterRaster;
@@ -271,6 +272,9 @@ public class IrisComplex implements DataProvider {
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
     private final transient HydrologyShoreBiomes shoreBiomes;
+    private static final long BLEND_SALT = 0x424c454e44L;
+    private final int blendRadius;
+    private final long blendSeed;
     @Setter(AccessLevel.NONE)
     private final transient SubterrainPlanner subterrainPlanner;
     private transient IrisImageMapRuntime imageMapRuntime;
@@ -311,6 +315,8 @@ public class IrisComplex implements DataProvider {
         IrisBiome emptyBiome = new IrisBiome().setInferredType(InferredType.CAVE);
         UUID focusUUID = UUID.nameUUIDFromBytes("focus".getBytes());
         this.rng = new RNG(engine.getSeedManager().getComplex());
+        this.blendRadius = engine.getDimension().getSurfaceBlend();
+        this.blendSeed = engine.getSeedManager().getComplex() ^ BLEND_SALT;
         childStyleSeed = IrisBiome.childStyleSeed(rng, 123);
         this.data = engine.getData();
         imageMapRuntime = IrisImageMapRuntime.compile(engine);
@@ -1721,6 +1727,29 @@ public class IrisComplex implements DataProvider {
 
     public double sampleProceduralTerrainHeight(double worldX, double worldZ) {
         return proceduralTerrainHeight.sample(worldX, worldZ);
+    }
+
+    /**
+     * The land biome whose surface layers and stored biome a column takes near a border (dimension surfaceBlend): the
+     * true biome at a spot jittered up to surfaceBlend blocks away, by a smooth wobble (tongues of one biome reaching
+     * into the other) plus per-block noise (a dithered edge). Away from borders the spot is in the column's own biome.
+     * Shores, seas and caves are never blended in or out.
+     */
+    public IrisBiome blendBiome(IrisBiome own, int x, int z) {
+        if (blendRadius <= 0 || own == null || own.getInferredType() != InferredType.LAND) {
+            return own;
+        }
+        double wobbleX = Math.sin(x * 0.11 + z * 0.047 + (blendSeed & 1023)) * Math.cos(z * 0.083 - x * 0.031);
+        double wobbleZ = Math.sin(z * 0.097 - x * 0.053 + ((blendSeed >> 10) & 1023)) * Math.cos(x * 0.071 + z * 0.029);
+        double ditherX = CellHash.unit(CellHash.mix(blendSeed, 1L, x, z)) * 2D - 1D;
+        double ditherZ = CellHash.unit(CellHash.mix(blendSeed, 2L, x, z)) * 2D - 1D;
+        int bx = x + (int) Math.round(blendRadius * (0.6D * wobbleX + 0.4D * ditherX));
+        int bz = z + (int) Math.round(blendRadius * (0.6D * wobbleZ + 0.4D * ditherZ));
+        if (bx == x && bz == z) {
+            return own;
+        }
+        IrisBiome other = trueBiomeStream.get(bx, bz);
+        return other != null && other.getInferredType() == InferredType.LAND ? other : own;
     }
 
     private IrisBiome resolveHydrologySurfaceBiome(double terrainHeight, double x, double z) {
