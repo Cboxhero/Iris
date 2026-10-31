@@ -75,6 +75,7 @@ final class RasterComposer {
                 column(cell);
             }
         }
+        capChannelHeads();
         gradeRiffles();
         raiseDams();
         bermEdges();
@@ -389,6 +390,43 @@ final class RasterComposer {
             if (crest != Integer.MIN_VALUE) {
                 terrain[cell] = Math.max(terrain[cell], crest);
                 mark(cell, WaterRole.DAM, dam, null);
+            }
+        }
+    }
+
+    /**
+     * A reach's water level comes from its whole graded profile, so where the ground beside a channel drops away (a
+     * beach, a hollow) the water stays up and bermEdges walls it in at full height. Cap each channel column's water
+     * at maxFill above the lowest dry land next to it, so the stream steps down with the ground instead. Neighbours
+     * are read from the original heads and global height functions, so both chunks of a border agree.
+     */
+    private void capChannelHeads() {
+        int sea = settings.seaLevel();
+        int maxFill = settings.deformation().maxFill();
+        int[] planned = head.clone();
+        for (int cell = 0; cell < CELLS; cell++) {
+            if (corner(cell) || tier[cell] == null || planned[cell] == Integer.MIN_VALUE) {
+                continue;
+            }
+            int gx = cell % GRID;
+            int gz = cell / GRID;
+            int cap = Integer.MAX_VALUE;
+            for (int side = 0; side < 4; side++) {
+                int nx = gx + (side == 0 ? 1 : side == 1 ? -1 : 0);
+                int nz = gz + (side == 2 ? 1 : side == 3 ? -1 : 0);
+                boolean inGrid = nx >= 0 && nz >= 0 && nx < GRID && nz < GRID && !corner(nz * GRID + nx);
+                int neighbourHead = inGrid ? planned[nz * GRID + nx] : headAt(originX + nx, originZ + nz);
+                if (neighbourHead != Integer.MIN_VALUE) {
+                    continue;
+                }
+                int ground = naturalAt(originX + nx, originZ + nz);
+                if (ground >= sea) {
+                    cap = Math.min(cap, ground + maxFill);
+                }
+            }
+            if (cap < head[cell]) {
+                head[cell] = Math.max(sea, cap);
+                terrain[cell] = Math.min(terrain[cell], head[cell] - 1);
             }
         }
     }
