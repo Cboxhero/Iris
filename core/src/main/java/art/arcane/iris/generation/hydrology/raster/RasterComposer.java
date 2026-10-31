@@ -318,6 +318,9 @@ final class RasterComposer {
     }
 
     private void gradeRiffles() {
+        if (!settings.deformation().riffles()) {
+            return;
+        }
         int surface = Integer.MIN_VALUE;
         for (int cell = 0; cell < CELLS && surface == Integer.MIN_VALUE; cell++) {
             if (interior(cell)) {

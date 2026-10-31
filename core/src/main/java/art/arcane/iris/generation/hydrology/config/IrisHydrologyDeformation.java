@@ -34,4 +34,7 @@ public class IrisHydrologyDeformation {
 
     @Description("Keeps caves from opening under water, so rivers and ponds never drain into them.")
     private boolean caveMask = true;
+
+    @Description("Raises the channel bed toward the lip above each drop in the water level (a riffle), so the water shallows before it falls. Off keeps the bed at its normal depth up to the drop.")
+    private boolean riffles = true;
 }

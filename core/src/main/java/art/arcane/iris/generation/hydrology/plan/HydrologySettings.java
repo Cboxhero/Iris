@@ -254,7 +254,7 @@ public final class HydrologySettings {
 
     private static Deformation deformation(IrisHydrologyDeformation config) {
         return new Deformation(config.getMaxFill(), (float) config.getBankSlope(), (float) config.getBankSteepFactor(),
-                (float) config.getBankNoise(), config.isCaveMask());
+                (float) config.getBankNoise(), config.isCaveMask(), config.isRiffles());
     }
 
     private Underground underground(IrisHydrologyUnderground config) {
@@ -529,7 +529,7 @@ public final class HydrologySettings {
     private void addLakesAndDeformation(Fingerprint hash) {
         hash.add(lakes.enabled()).add(lakes.minArea()).add(lakes.maxArea())
                 .add(deformation.maxFill()).add(deformation.bankSlope()).add(deformation.bankSteepFactor())
-                .add(deformation.bankNoise()).add(deformation.caveMask());
+                .add(deformation.bankNoise()).add(deformation.caveMask()).add(deformation.riffles());
     }
 
     private void addUnderground(Fingerprint hash) {
@@ -584,7 +584,7 @@ public final class HydrologySettings {
     public record Lakes(boolean enabled, int minArea, int maxArea) {
     }
 
-    public record Deformation(int maxFill, float bankSlope, float bankSteepFactor, float bankNoise, boolean caveMask) {
+    public record Deformation(int maxFill, float bankSlope, float bankSteepFactor, float bankNoise, boolean caveMask, boolean riffles) {
     }
 
     public record SeaInlets(boolean enabled, int spacing, int minimumCliffHeight, IntRange length, FloatRange halfWidth,
